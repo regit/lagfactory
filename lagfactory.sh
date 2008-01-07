@@ -25,11 +25,13 @@
 
 
 IFACE="eth0 eth2" # Input and output interface to simulate lag in INPUT and OUTPUT
+TARGET="0.0.0.0/0" # Host or network to apply lag on
+
+# Default value
 DELAY="3000"  # delay in ms
-VAR="2000"  # delay in ms
+VAR="2000"  # delay in ms (packets will be delayed from DELAY +/- VAR)
 BANDWITH="200kbit" # bp of simulated link
 PERCENTLOSS="2%" # Percent of packet loss
-TARGET="0.0.0.0/0" # Host or network to apply lag on
 
 ########################################
 # No need to modify under this line.
