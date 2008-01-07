@@ -3,6 +3,8 @@
 # This script uses Netem (http://www.linux-foundation.org/en/Net:Netem) to simulate 
 # lag and packet loss on traffic going and coming from a selected network.
 #
+# Customize value at start of script.
+#
 # Copyright (C) 2008 INL
 # Written by Éric Leblond <eric@inl.fr>
 #            Vincent Deffontaines <vincent@inl.fr>
@@ -28,6 +30,10 @@ VAR="2000"  # delay in ms
 BANDWITH="200kbit" # bp of simulated link
 PERCENTLOSS="2%" # Percent of packet loss
 TARGET="0.0.0.0/0" # Host or network to apply lag on
+
+########################################
+# No need to modify under this line.
+########################################
 
 if [ -n "$2" ]; then
   DELAY=$2
