@@ -81,6 +81,17 @@ done;
   
 }
 
+do_status() {
+
+for IIF in ${IFACE}; do
+  tc qdisc show dev ${IIF}
+  tc filter show dev ${IIF}
+done;
+
+  /sbin/iptables -L POSTROUTING -nv -t mangle
+
+}
+
 case "$1" in
   start)
     do_start
@@ -91,6 +102,9 @@ case "$1" in
   restart)
     do_stop
     do_start
+    ;;
+  status)
+    do_status
     ;;
   *)
     echo "Usage : netem.sh start|stop [ \$DELAY [ \$LOSS ] ]"
