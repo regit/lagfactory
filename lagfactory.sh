@@ -33,6 +33,10 @@ VAR="2000"  # delay in ms (packets will be delayed from DELAY +/- VAR)
 BANDWITH="200kbit" # bp of simulated link
 PERCENTLOSS="2%" # Percent of packet loss
 
+# Path to commands
+IPTABLES=/sbin/iptables
+TC=/sbin/tc
+
 ########################################
 # No need to modify under this line.
 ########################################
@@ -51,44 +55,44 @@ fi
 do_start() {
 
 for IIF in ${IFACE}; do
-tc qdisc add dev ${IIF} root handle 1: prio
-tc qdisc add dev ${IIF} parent 1:3 handle 30: netem \
+${TC} qdisc add dev ${IIF} root handle 1: prio
+${TC} qdisc add dev ${IIF} parent 1:3 handle 30: netem \
   delay ${DELAY}ms ${VAR}ms loss ${PERCENTLOSS} 33.33%
  
-tc qdisc add dev ${IIF} parent 30:1 tbf rate ${BANDWITH} buffer 1600 limit 3000
+${TC} qdisc add dev ${IIF} parent 30:1 tbf rate ${BANDWITH} buffer 1600 limit 3000
 
-tc filter add dev ${IIF} protocol ip parent 1:0 prio 3 handle 5000 fw flowid 1:3
+${TC} filter add dev ${IIF} protocol ip parent 1:0 prio 3 handle 5000 fw flowid 1:3
 
 done;
 
-  /sbin/iptables -A POSTROUTING -t mangle -d ${TARGET} -j MARK --set-mark 5000
-  /sbin/iptables -A POSTROUTING -t mangle -s ${TARGET} -j MARK --set-mark 5000
-  /sbin/iptables -A POSTROUTING -t mangle -d ${TARGET} -p tcp --dport 22 -j MARK --set-mark 0
-  /sbin/iptables -A POSTROUTING -t mangle -s ${TARGET} -p tcp --sport 22 -j MARK --set-mark 0
+  ${IPTABLES} -A POSTROUTING -t mangle -d ${TARGET} -j MARK --set-mark 5000
+  ${IPTABLES} -A POSTROUTING -t mangle -s ${TARGET} -j MARK --set-mark 5000
+  ${IPTABLES} -A POSTROUTING -t mangle -d ${TARGET} -p tcp --dport 22 -j MARK --set-mark 0
+  ${IPTABLES} -A POSTROUTING -t mangle -s ${TARGET} -p tcp --sport 22 -j MARK --set-mark 0
 
 }
 
 do_stop() {
 
 for IIF in ${IFACE}; do
-  tc qdisc del dev ${IIF} root
+  ${TC} qdisc del dev ${IIF} root
 done;
 
-  /sbin/iptables -D POSTROUTING -t mangle -d ${TARGET} -j MARK --set-mark 5000
-  /sbin/iptables -D POSTROUTING -t mangle -s ${TARGET} -j MARK --set-mark 5000
-  /sbin/iptables -D POSTROUTING -t mangle -d ${TARGET} -p tcp --dport 22 -j MARK --set-mark 0
-  /sbin/iptables -D POSTROUTING -t mangle -s ${TARGET} -p tcp --sport 22 -j MARK --set-mark 0
+  ${IPTABLES} -D POSTROUTING -t mangle -d ${TARGET} -j MARK --set-mark 5000
+  ${IPTABLES} -D POSTROUTING -t mangle -s ${TARGET} -j MARK --set-mark 5000
+  ${IPTABLES} -D POSTROUTING -t mangle -d ${TARGET} -p tcp --dport 22 -j MARK --set-mark 0
+  ${IPTABLES} -D POSTROUTING -t mangle -s ${TARGET} -p tcp --sport 22 -j MARK --set-mark 0
   
 }
 
 do_status() {
 
 for IIF in ${IFACE}; do
-  tc qdisc show dev ${IIF}
-  tc filter show dev ${IIF}
+  ${TC} qdisc show dev ${IIF}
+  ${TC} filter show dev ${IIF}
 done;
 
-  /sbin/iptables -L POSTROUTING -nv -t mangle
+  ${IPTABLES} -L POSTROUTING -nv -t mangle
 
 }
 
