@@ -5,7 +5,7 @@ LagFactory script
 Goal
 ====
 
-This bash script uses .. _Netem http://www.linux-foundation.org/en/Net:Netem to simulate delay and packet loss to a given target.
+This bash script uses `Netem <http://www.linux-foundation.org/en/Net:Netem>`_ to simulate delay and packet loss to a given target.
 
 Using it
 ========
