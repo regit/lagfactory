@@ -55,7 +55,7 @@ fi
 do_start() {
 
 for IIF in ${IFACE}; do
-${TC} qdisc add dev ${IIF} root handle 1: prio
+${TC} qdisc add dev ${IIF} root handle 1: prio bands 3
 ${TC} qdisc add dev ${IIF} parent 1:3 handle 30: netem \
   delay ${DELAY}ms ${VAR}ms loss ${PERCENTLOSS} 33.33%
  
