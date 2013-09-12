@@ -54,6 +54,9 @@ fi
 
 do_start() {
 
+modprobe sch_prio
+modprobe sch_netem
+
 for IIF in ${IFACE}; do
 ${TC} qdisc add dev ${IIF} root handle 1: prio bands 3
 ${TC} qdisc add dev ${IIF} parent 1:3 handle 30: netem \
@@ -82,6 +85,9 @@ done;
   ${IPTABLES} -D POSTROUTING -t mangle -s ${TARGET} -j MARK --set-mark 5000
   ${IPTABLES} -D POSTROUTING -t mangle -d ${TARGET} -p tcp --dport 22 -j MARK --set-mark 0
   ${IPTABLES} -D POSTROUTING -t mangle -s ${TARGET} -p tcp --sport 22 -j MARK --set-mark 0
+
+  rmmod sch_prio
+  rmmod sch_netem
   
 }
 
