@@ -20,7 +20,7 @@ You need first to edit parameters at the start of the script to specify the netw
 Then, you will simply need to run as root something like ::
 
 	 lagfactory.sh start 4000 2
-	  DELAY : 1000 ms
+	  DELAY : 4000 ms
 	  LOSS : 2%
  
 This will simulate a delay of 4 sec (plus or minus 2 sec) for all packets going to ''192.168.1.0/24'' via ''eth0'' and coming back from ''192.168.1.0/24'' via ''eth2''. There is also a 2 percent packet loss on these packets.
