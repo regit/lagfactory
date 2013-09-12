@@ -117,7 +117,7 @@ case "$1" in
     do_status
     ;;
   *)
-    echo "Usage : netem.sh start|stop [ \$DELAY [ \$LOSS ] ]"
+    echo "Usage : lagfactory.sh start|stop [ \$DELAY [ \$LOSS ] ]"
     echo "  DELAY in ms, LOSS in %"
     ;;
 esac
