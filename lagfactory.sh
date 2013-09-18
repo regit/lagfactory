@@ -25,7 +25,7 @@
 
 
 IFACE="eth0 eth2" # Input and output interface to simulate lag in INPUT and OUTPUT
-TARGET="0.0.0.0/0" # Host or network to apply lag on
+TARGET="0.0.0.0/0 ::/0" # Hosts or networks to apply lag on
 
 # Default value
 DELAY="3000"  # delay in ms
@@ -35,6 +35,7 @@ PERCENTLOSS="2%" # Percent of packet loss
 
 # Path to commands
 IPTABLES=/sbin/iptables
+IP6TABLES=/sbin/ip6tables
 TC=/sbin/tc
 
 ########################################
@@ -65,13 +66,21 @@ ${TC} qdisc add dev ${IIF} parent 1:3 handle 30: netem \
 ${TC} qdisc add dev ${IIF} parent 30:1 tbf rate ${BANDWITH} buffer 1600 limit 3000
 
 ${TC} filter add dev ${IIF} protocol ip parent 1:0 prio 3 handle 5000 fw flowid 1:3
+${TC} filter add dev ${IIF} protocol ipv6 parent 1:0 prio 4 handle 5000 fw flowid 1:3
 
 done;
 
-  ${IPTABLES} -A POSTROUTING -t mangle -d ${TARGET} -j MARK --set-mark 5000
-  ${IPTABLES} -A POSTROUTING -t mangle -s ${TARGET} -j MARK --set-mark 5000
-  ${IPTABLES} -A POSTROUTING -t mangle -d ${TARGET} -p tcp --dport 22 -j MARK --set-mark 0
-  ${IPTABLES} -A POSTROUTING -t mangle -s ${TARGET} -p tcp --sport 22 -j MARK --set-mark 0
+for NET in ${TARGET}; do
+  if [[ ${NET} == *:* ]]; then
+      IPT=${IP6TABLES}
+  else
+      IPT=${IPTABLES}
+  fi
+  ${IPT} -A POSTROUTING -t mangle -d ${NET} -j MARK --set-mark 5000
+  ${IPT} -A POSTROUTING -t mangle -s ${NET} -j MARK --set-mark 5000
+  ${IPT} -A POSTROUTING -t mangle -d ${NET} -p tcp --dport 22 -j MARK --set-mark 0
+  ${IPT} -A POSTROUTING -t mangle -s ${NET} -p tcp --sport 22 -j MARK --set-mark 0
+done;
 
 }
 
@@ -81,10 +90,17 @@ for IIF in ${IFACE}; do
   ${TC} qdisc del dev ${IIF} root
 done;
 
-  ${IPTABLES} -D POSTROUTING -t mangle -d ${TARGET} -j MARK --set-mark 5000
-  ${IPTABLES} -D POSTROUTING -t mangle -s ${TARGET} -j MARK --set-mark 5000
-  ${IPTABLES} -D POSTROUTING -t mangle -d ${TARGET} -p tcp --dport 22 -j MARK --set-mark 0
-  ${IPTABLES} -D POSTROUTING -t mangle -s ${TARGET} -p tcp --sport 22 -j MARK --set-mark 0
+for NET in ${TARGET}; do
+  if [[ ${NET} == *:* ]]; then
+      IPT=${IP6TABLES}
+  else
+      IPT=${IPTABLES}
+  fi
+  ${IPT} -D POSTROUTING -t mangle -d ${NET} -j MARK --set-mark 5000
+  ${IPT} -D POSTROUTING -t mangle -s ${NET} -j MARK --set-mark 5000
+  ${IPT} -D POSTROUTING -t mangle -d ${NET} -p tcp --dport 22 -j MARK --set-mark 0
+  ${IPT} -D POSTROUTING -t mangle -s ${NET} -p tcp --sport 22 -j MARK --set-mark 0
+done;
 
   rmmod sch_prio
   rmmod sch_netem
