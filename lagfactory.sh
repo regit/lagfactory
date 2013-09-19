@@ -26,6 +26,7 @@
 
 IFACE="eth0 eth2" # Input and output interface to simulate lag in INPUT and OUTPUT
 TARGET="0.0.0.0/0 ::/0" # Hosts or networks to apply lag on
+NO_SSH_DELAY="yes" # if set to "yes" ssh will not be impacted by delay
 
 # Default value
 DELAY="3000"  # delay in ms
@@ -78,8 +79,10 @@ for NET in ${TARGET}; do
   fi
   ${IPT} -A POSTROUTING -t mangle -d ${NET} -j MARK --set-mark 5000
   ${IPT} -A POSTROUTING -t mangle -s ${NET} -j MARK --set-mark 5000
-  ${IPT} -A POSTROUTING -t mangle -d ${NET} -p tcp --dport 22 -j MARK --set-mark 0
-  ${IPT} -A POSTROUTING -t mangle -s ${NET} -p tcp --sport 22 -j MARK --set-mark 0
+  if [ ${NO_SSH_DELAY} = "yes" ]; then
+    ${IPT} -A POSTROUTING -t mangle -d ${NET} -p tcp --dport 22 -j MARK --set-mark 0
+    ${IPT} -A POSTROUTING -t mangle -s ${NET} -p tcp --sport 22 -j MARK --set-mark 0
+  fi
 done;
 
 }
@@ -98,8 +101,10 @@ for NET in ${TARGET}; do
   fi
   ${IPT} -D POSTROUTING -t mangle -d ${NET} -j MARK --set-mark 5000
   ${IPT} -D POSTROUTING -t mangle -s ${NET} -j MARK --set-mark 5000
-  ${IPT} -D POSTROUTING -t mangle -d ${NET} -p tcp --dport 22 -j MARK --set-mark 0
-  ${IPT} -D POSTROUTING -t mangle -s ${NET} -p tcp --sport 22 -j MARK --set-mark 0
+  if [ ${NO_SSH_DELAY} = "yes" ]; then
+    ${IPT} -D POSTROUTING -t mangle -d ${NET} -p tcp --dport 22 -j MARK --set-mark 0
+    ${IPT} -D POSTROUTING -t mangle -s ${NET} -p tcp --sport 22 -j MARK --set-mark 0
+  fi
 done;
 
   rmmod sch_prio
